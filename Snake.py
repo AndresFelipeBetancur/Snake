@@ -29,32 +29,104 @@ def visualizar_tablero(c):
 def desplazamiento(tablero,movimiento,posicion):
     posicion_en_i = posicion[0]
     posicion_en_j = posicion[1]
-    
+    muerte = False
+
     #Movimiento hacia la derecha
     if movimiento == "d":
-        if posicion_en_j < 5:
+        if posicion_en_j <= 5:
+            #muerte = detectar_muerte(posicion,movimiento)
+            #if muerte == False:
             tablero[posicion_en_i][posicion_en_j] = "         "
             posicion_en_j += 1
-            tablero[posicion_en_i][posicion_en_j] = "    0    "
 
-    posicion = [posicion_en_i,posicion_en_j]
-    datos = [tablero,posicion]
+            if posicion_en_j > 5:
+                muerte = True
+            else:
+                tablero[posicion_en_i][posicion_en_j] = "    0    "
 
+
+
+
+    #Movimiento hacia la izquierda
+    if movimiento == "a":
+        if posicion_en_j >= 0:
+            #muerte = detectar_muerte(posicion,movimiento)
+            #if muerte == False:
+            tablero[posicion_en_i][posicion_en_j] = "         "
+            posicion_en_j -= 1
+
+            if posicion_en_j < 0:
+                muerte = True
+            else:
+                tablero[posicion_en_i][posicion_en_j] = "    0    "
+    
+    
+
+    #Movimiento hacia arriba
+    if movimiento == "w":
+        if posicion_en_i >= 0:
+            #muerte = detectar_muerte(posicion,movimiento)
+            #if muerte == False:
+            tablero[posicion_en_i][posicion_en_j] = "         "
+            posicion_en_i -= 1
+
+            if posicion_en_i < 0:
+                muerte = True
+            else:
+                tablero[posicion_en_i][posicion_en_j] = "    0    "
+
+   
+
+    #Movimiento hacia abajo
+    if movimiento == "s":
+        if posicion_en_i <= 5:
+            #muerte = detectar_muerte(posicion,movimiento)
+            #if muerte == False:
+            tablero[posicion_en_i][posicion_en_j] = "         "
+            posicion_en_i += 1
+
+            if posicion_en_i >= 6:
+                muerte = True
+            else:
+                tablero[posicion_en_i][posicion_en_j] = "    0    "
 
     
 
+    posicion = [posicion_en_i,posicion_en_j]
+    datos = [tablero,posicion,muerte]
+    
     return datos
 
+"""
+def detectar_muerte(posicion,movimiento):
+    posicion_en_i = posicion[0]
+    posicion_en_j = posicion[1]
 
+    muerte = False
+
+    if posicion_en_j == 6 and movimiento == "d":
+        muerte = True
+
+    if posicion_en_j == -1 and movimiento == "a":
+        muerte = True
+    
+    if posicion_en_i == -1 and movimiento == "w":
+        muerte = True
+
+    if posicion_en_i == 5 and movimiento == "s":
+        muerte = True
+
+    return muerte
+"""
 
 def juego():
     muerte = False
     #Movimiento y posicion inicial del gusano.
     movimiento = "d"    
     posicion = [2,2]
-
+    muerte = False
     tablero = [["         ","         ","         ","         ","         ","         "],["         ","         ","         ","         ","         ","         "],["         ","         ","    0    ","         ","         ","         "],["         ","         ","         ","         ","         ","         "],["         ","         ","         ","         ","         ","         "],["         ","         ","         ","         ","         ","         "]]
-    contador = 0
+    
 
     while muerte == False:
         visualizar_tablero(tablero)
@@ -64,17 +136,24 @@ def juego():
         tablero = datos[0]
         posicion = datos[1]
 
+        muerte = datos[2] 
+        
+
         if msvcrt.kbhit():           
             movimiento = msvcrt.getch() 
             movimiento = movimiento.decode()
 
-        
-        contador = contador + 1
-        if contador == 5:
-            muerte = True
+   
+def introduccion():
+    opc = 0
+    while opc != 3:
+        os.system("cls" if os.name == "nt" else "clear")
+        print("""Bienvenido a Snake, elige una opcion:
+    1. Jugar.
+    2. Ver mejor puntuacion.
+    3. Salir""")
+        opc = int(input("Ingrese una opcion: >"))
+        if opc == 1:
+            juego()
 
-
-        
-
-
-juego()
+introduccion()
