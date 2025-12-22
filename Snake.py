@@ -10,6 +10,9 @@ import msvcrt
 #Para generar la posicion aleatoria de la comida
 import random
 
+#Para reproducir los sonidos del juego
+import winsound
+
 def visualizar_tablero(c,puntuacion):
     #Se limpia la consola antes de cada impresion
     os.system("cls" if os.name == "nt" else "clear")
@@ -32,9 +35,10 @@ Tu puntuacion actual: {puntuacion}""")
 
  
 
-def desplazamiento(tablero,movimiento,posicion,puntuacion):
+def desplazamiento(tablero,movimiento,posicion,puntuacion,cola):
     posicion_en_i = posicion[0]
     posicion_en_j = posicion[1]
+    comio = False
     muerte = False
     
 
@@ -51,7 +55,8 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion):
             else:
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
-
+                    comio = True
+                    
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
 
 
@@ -70,6 +75,7 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion):
             else:
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
+                    comio = True
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
     
     
@@ -87,6 +93,7 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion):
             else:
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
+                    comio = True
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
 
    
@@ -104,12 +111,25 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion):
             else:
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
+                    comio = True
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
 
     
+    if comio == True:
+        if movimiento == "d":
+            posicion_nueva = (posicion_en_i * 10) + (posicion_en_j + 1)
+        elif movimiento == "a":
+            posicion_nueva = (posicion_en_i * 10) + (posicion_en_j - 1)
+        elif movimiento == "w":
+            posicion_nueva = (posicion_en_i * 10 + 1) + (posicion_en_j)
+        elif movimiento == "s":
+            posicion_nueva = (posicion_en_i * 10 - 1) + (posicion_en_j)
+        
+        cola.append(posicion_nueva)
+        
 
     posicion = [posicion_en_i,posicion_en_j]
-    datos = [tablero,posicion,muerte,puntuacion]
+    datos = [tablero,posicion,muerte,puntuacion,cola]
     
     return datos
 
@@ -169,13 +189,41 @@ def generar_comida(tablero):
     else:
         return False
 
+def alargar_cola(tablero,cola,posicion,movimiento):
+    if movimiento == "d":
+        cordenada_cola = (posicion[0]) * 10 + (posicion[1] + 1)
+    elif movimiento == "a":
+        cordenada_cola = (posicion[0]) * 10 + (posicion[1] - 1)
+    elif movimiento == "w":
+        cordenada_cola = (posicion[0] * 10 + 1)  + (posicion[1])
+    elif movimiento == "w":
+        cordenada_cola = (posicion[0] * 10 - 1)  + (posicion[1])
+
+    for i in range(0, len(cola) - 1):
+        if i == 0:
+            cola[i] = cordenada_cola
+        else:
+            cola[i] = cola[ i + 1 ]
+
+    for i in range(0,len(tablero)):
+        for j in range(0,len(tablero[i])):
+            for h in range(0,len(cola)):
+                if tablero[i][j] == cola[h]:
+                    tablero[i][j] = "    $    "
+
+    return tablero
+
+
 def juego():
+    winsound.PlaySound(None, winsound.SND_PURGE)
+
+    cola = []
+
     muerte = False
     puntuacion = 0
     #Movimiento y posicion inicial del gusano.
     movimiento = "d"    
     posicion = [2,2]
-    muerte = False
     tablero = [["         ","         ","         ","         ","         ","         "],["         ","         ","         ","         ","         ","         "],["         ","         ","    0    ","         ","         ","         "],["         ","         ","         ","         ","         ","         "],["         ","         ","         ","         ","         ","         "],["         ","         ","         ","         ","         ","         "]]
     
 
@@ -183,10 +231,20 @@ def juego():
         visualizar_tablero(tablero,puntuacion)
         time.sleep(0.6)
         
-        datos = desplazamiento(tablero,movimiento,posicion,puntuacion)
+        datos = desplazamiento(tablero,movimiento,posicion,puntuacion,cola)
+
         tablero = datos[0]
         posicion = datos[1]
+
+        if datos[3] > puntuacion:
+            winsound.PlaySound(r"C:\Sonidos\comer.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)
+            tablero = alargar_cola(tablero, cola, posicion,movimiento)
+
         puntuacion = datos[3]
+        cola = datos[4]
+
+        
+        
 
 
         comida = generar_comida(tablero)
@@ -201,12 +259,19 @@ def juego():
                 movimiento = msvcrt.getch() 
                 movimiento = movimiento.decode()
 
+    winsound.PlaySound(r"C:\Sonidos\muerte.wav", winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
     return puntuacion
    
 def introduccion():
     opc = 0
     mejor_puntuacion = 0
+    winsound.PlaySound(None, winsound.SND_PURGE)
+    winsound.PlaySound(r"C:\Sonidos\intro.wav", winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+
     while opc != 3:
+        
+        winsound.PlaySound(r"C:\Sonidos\intro.wav", winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+
         os.system("cls" if os.name == "nt" else "clear")
         print("""Bienvenido a Snake, elige una opcion:
     1. Jugar.
