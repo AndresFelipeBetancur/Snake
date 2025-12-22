@@ -7,7 +7,10 @@ import os
 #Para recibir entradas de datos en tiempo real sin detener el programa.
 import msvcrt
 
-def visualizar_tablero(c):
+#Para generar la posicion aleatoria de la comida
+import random
+
+def visualizar_tablero(c,puntuacion):
     #Se limpia la consola antes de cada impresion
     os.system("cls" if os.name == "nt" else "clear")
     print(f"""+---------+---------+---------+---------+---------+---------+
@@ -23,13 +26,17 @@ def visualizar_tablero(c):
 +---------+---------+---------+---------+---------+---------+
 |{c[5][0]}|{c[5][1]}|{c[5][2]}|{c[5][3]}|{c[5][4]}|{c[5][5]}|
 +---------+---------+---------+---------+---------+---------+
-""")
 
 
-def desplazamiento(tablero,movimiento,posicion):
+Tu puntuacion actual: {puntuacion}""")
+
+ 
+
+def desplazamiento(tablero,movimiento,posicion,puntuacion):
     posicion_en_i = posicion[0]
     posicion_en_j = posicion[1]
     muerte = False
+    
 
     #Movimiento hacia la derecha
     if movimiento == "d":
@@ -42,6 +49,9 @@ def desplazamiento(tablero,movimiento,posicion):
             if posicion_en_j > 5:
                 muerte = True
             else:
+                if tablero[posicion_en_i][posicion_en_j] == "    #    ":
+                    puntuacion = puntuacion + 1
+
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
 
 
@@ -58,6 +68,8 @@ def desplazamiento(tablero,movimiento,posicion):
             if posicion_en_j < 0:
                 muerte = True
             else:
+                if tablero[posicion_en_i][posicion_en_j] == "    #    ":
+                    puntuacion = puntuacion + 1
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
     
     
@@ -73,6 +85,8 @@ def desplazamiento(tablero,movimiento,posicion):
             if posicion_en_i < 0:
                 muerte = True
             else:
+                if tablero[posicion_en_i][posicion_en_j] == "    #    ":
+                    puntuacion = puntuacion + 1
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
 
    
@@ -88,12 +102,14 @@ def desplazamiento(tablero,movimiento,posicion):
             if posicion_en_i >= 6:
                 muerte = True
             else:
+                if tablero[posicion_en_i][posicion_en_j] == "    #    ":
+                    puntuacion = puntuacion + 1
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
 
     
 
     posicion = [posicion_en_i,posicion_en_j]
-    datos = [tablero,posicion,muerte]
+    datos = [tablero,posicion,muerte,puntuacion]
     
     return datos
 
@@ -119,8 +135,43 @@ def detectar_muerte(posicion,movimiento):
     return muerte
 """
 
+def generar_comida(tablero):
+    posiciones_disponibles = []
+    hay_comida = False
+
+    for i in range(0,len(tablero)):
+        for j in range(0,len(tablero[i])):
+            if tablero[i][j] == "         ":   
+
+                posicion_temporal = (i*10)+j
+                posiciones_disponibles.append(posicion_temporal)
+
+            if tablero[i][j] == "    #    ":
+                    hay_comida = True
+    if len(posiciones_disponibles) > 0:
+        encontro = False
+        while encontro == False:
+            posicion_en_i = random.randint(0,4)
+            posicion_en_j = random.randint(0,5)
+
+            for i in range(0,len(posiciones_disponibles)):
+                if posiciones_disponibles[i] == (posicion_en_i * 10) + posicion_en_j:
+                    encontro = True
+        
+        
+        
+        if hay_comida == False:
+            tablero[posicion_en_i][posicion_en_j] = "    #    "
+            return tablero
+        else:
+            return True
+
+    else:
+        return False
+
 def juego():
     muerte = False
+    puntuacion = 0
     #Movimiento y posicion inicial del gusano.
     movimiento = "d"    
     posicion = [2,2]
@@ -129,23 +180,32 @@ def juego():
     
 
     while muerte == False:
-        visualizar_tablero(tablero)
+        visualizar_tablero(tablero,puntuacion)
         time.sleep(0.6)
         
-        datos = desplazamiento(tablero,movimiento,posicion)
+        datos = desplazamiento(tablero,movimiento,posicion,puntuacion)
         tablero = datos[0]
         posicion = datos[1]
+        puntuacion = datos[3]
 
-        muerte = datos[2] 
-        
 
-        if msvcrt.kbhit():           
-            movimiento = msvcrt.getch() 
-            movimiento = movimiento.decode()
+        comida = generar_comida(tablero)
 
+        if type(comida) == list:
+            tablero = comida
+        elif comida == False:
+            muerte = True
+        else:
+            muerte = datos[2] 
+            if msvcrt.kbhit():           
+                movimiento = msvcrt.getch() 
+                movimiento = movimiento.decode()
+
+    return puntuacion
    
 def introduccion():
     opc = 0
+    mejor_puntuacion = 0
     while opc != 3:
         os.system("cls" if os.name == "nt" else "clear")
         print("""Bienvenido a Snake, elige una opcion:
@@ -154,6 +214,15 @@ def introduccion():
     3. Salir""")
         opc = int(input("Ingrese una opcion: >"))
         if opc == 1:
-            juego()
+            puntuacion = juego()
+            if puntuacion > mejor_puntuacion:
+                mejor_puntuacion = puntuacion
+        if opc == 2:
+            if mejor_puntuacion == 0:
+                print("Aun no tienes ningun registro.")
+                time.sleep(2)
+            else:
+                print("Esta es tu mejor puntuacion: ", mejor_puntuacion)
+                time.sleep(2)
 
 introduccion()
