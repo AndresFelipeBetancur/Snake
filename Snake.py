@@ -290,10 +290,6 @@ def juego():
         
         datos = desplazamiento(tablero,movimiento,posicion,puntuacion,cola)
         
-        if puntuacion == 35:
-            winsound.PlaySound(os.path.join(SONIDOS_DIR, "victory.wav"), winsound.SND_FILENAME)
-
-        
         
         tablero = datos[0]
         tablero = actualizar_cola(tablero,cola,posicion)
@@ -310,6 +306,9 @@ def juego():
                 
 
         puntuacion = datos[3]
+        if puntuacion == 35:
+            winsound.PlaySound(os.path.join(SONIDOS_DIR, "victory.wav"), winsound.SND_FILENAME)
+
         cola = datos[4]
 
         comida = generar_comida(tablero)
