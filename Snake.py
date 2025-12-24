@@ -13,6 +13,9 @@ import random
 #Para reproducir los sonidos del juego
 import winsound
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SONIDOS_DIR = os.path.join(BASE_DIR, "Sonidos")
+
 def visualizar_tablero(c,puntuacion):
     #Se limpia la consola antes de cada impresion
     os.system("cls" if os.name == "nt" else "clear")
@@ -52,12 +55,16 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion,cola):
 
             if posicion_en_j > 5:
                 muerte = True
+
             else:
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
                     comio = True
                     
+                if tablero[posicion_en_i][posicion_en_j] == "    $    ":
+                    muerte = True
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
+                
 
 
 
@@ -76,7 +83,10 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion,cola):
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
                     comio = True
+                if tablero[posicion_en_i][posicion_en_j] == "    $    ":
+                    muerte = True
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
+                
     
     
 
@@ -94,7 +104,11 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion,cola):
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
                     comio = True
+                if tablero[posicion_en_i][posicion_en_j] == "    $    ":
+                    muerte = True
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
+                if tablero[posicion_en_i][posicion_en_j] == "    $    ":
+                    muerte = True
 
    
 
@@ -112,21 +126,35 @@ def desplazamiento(tablero,movimiento,posicion,puntuacion,cola):
                 if tablero[posicion_en_i][posicion_en_j] == "    #    ":
                     puntuacion = puntuacion + 1
                     comio = True
+                if tablero[posicion_en_i][posicion_en_j] == "    $    ":
+                    muerte = True
                 tablero[posicion_en_i][posicion_en_j] = "    0    "
+                if tablero[posicion_en_i][posicion_en_j] == "    $    ":
+                    muerte = True
 
     
+    
+
     if comio == True:
         if movimiento == "d":
-            posicion_nueva = (posicion_en_i * 10) + (posicion_en_j + 1)
+            posicion_nueva = [posicion_en_i,posicion_en_j - 1]
+
         elif movimiento == "a":
-            posicion_nueva = (posicion_en_i * 10) + (posicion_en_j - 1)
+            posicion_nueva = [posicion_en_i,posicion_en_j + 1]
+
         elif movimiento == "w":
-            posicion_nueva = (posicion_en_i * 10 + 1) + (posicion_en_j)
+            posicion_nueva = [posicion_en_i - 1,posicion_en_j]
+
         elif movimiento == "s":
-            posicion_nueva = (posicion_en_i * 10 - 1) + (posicion_en_j)
+            posicion_nueva = [posicion_en_i + 1,posicion_en_j]
         
         cola.append(posicion_nueva)
         
+    for i in range(len(cola)):
+        pos_i = cola[i][0]
+        pos_j = cola[i][1]
+
+        tablero[pos_i][pos_j] = "    $    "
 
     posicion = [posicion_en_i,posicion_en_j]
     datos = [tablero,posicion,muerte,puntuacion,cola]
@@ -189,30 +217,53 @@ def generar_comida(tablero):
     else:
         return False
 
+"""
 def alargar_cola(tablero,cola,posicion,movimiento):
-    if movimiento == "d":
-        cordenada_cola = (posicion[0]) * 10 + (posicion[1] + 1)
-    elif movimiento == "a":
-        cordenada_cola = (posicion[0]) * 10 + (posicion[1] - 1)
-    elif movimiento == "w":
-        cordenada_cola = (posicion[0] * 10 + 1)  + (posicion[1])
-    elif movimiento == "w":
-        cordenada_cola = (posicion[0] * 10 - 1)  + (posicion[1])
+    posicion_en_i = posicion[0]
+    posicion_en_j = posicion[1]
 
-    for i in range(0, len(cola) - 1):
-        if i == 0:
-            cola[i] = cordenada_cola
-        else:
-            cola[i] = cola[ i + 1 ]
+    for i in range(0, len(cola)):
 
-    for i in range(0,len(tablero)):
-        for j in range(0,len(tablero[i])):
-            for h in range(0,len(cola)):
-                if tablero[i][j] == cola[h]:
-                    tablero[i][j] = "    $    "
+        if movimiento == "d":
+            cordenada_cola = [posicion_en_i,posicion_en_j - 1]
+        elif movimiento == "a":
+            cordenada_cola = [posicion_en_i,posicion_en_j + 1]
+        elif movimiento == "w":
+            cordenada_cola = [posicion_en_i + 1,posicion_en_j]
+        elif movimiento == "s":
+            cordenada_cola = [posicion_en_i - 1,posicion_en_j]
+
+        for i in range(0, len(cola) - 1):
+            if i == 0:
+                cola[i] = cordenada_cola
+            else:
+                cola[i] = cola[ i + 1 ]
+
+        tablero[posicion_en_i][posicion_en_j] = "         "    
+        tablero[cordenada_cola[0]][cordenada_cola[1]] = "    $    "
+
 
     return tablero
 
+"""
+
+def actualizar_cola(tablero, cola, posicion):
+    cola.insert(0,posicion)
+    posicion_antigua = cola.pop(-1)
+
+    tablero[posicion_antigua[0]][posicion_antigua[1]] = "         "
+    for i in range(len(cola)):
+        pos_i = cola[i][0]
+        pos_j = cola[i][1]
+
+        tablero[pos_i][pos_j] = "    $    "
+
+    for i in range(len(tablero)):
+        for j in range(len(tablero[i])):
+            if tablero[i][j] != "    0    " and tablero[i][j] != "    #    " and tablero[i][j] != "    $    ":
+                tablero[i][j] = "         "
+
+    return tablero
 
 def juego():
     winsound.PlaySound(None, winsound.SND_PURGE)
@@ -228,24 +279,38 @@ def juego():
     
 
     while muerte == False:
+
+        if msvcrt.kbhit():           
+                movimiento = msvcrt.getch() 
+                movimiento = movimiento.decode()
+
+
         visualizar_tablero(tablero,puntuacion)
         time.sleep(0.6)
         
         datos = desplazamiento(tablero,movimiento,posicion,puntuacion,cola)
+        
+        if puntuacion == 35:
+            winsound.PlaySound(os.path.join(SONIDOS_DIR, "victory.wav"), winsound.SND_FILENAME)
 
+        
+        
         tablero = datos[0]
+        tablero = actualizar_cola(tablero,cola,posicion)
+
+        if len(datos[4]) > len(cola): 
+            cola.append(datos[4][-1])
+
         posicion = datos[1]
 
         if datos[3] > puntuacion:
-            winsound.PlaySound(r"C:\Sonidos\comer.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)
-            tablero = alargar_cola(tablero, cola, posicion,movimiento)
+            winsound.PlaySound(os.path.join(SONIDOS_DIR, "comer.wav"), winsound.SND_FILENAME)
+        
+            
+                
 
         puntuacion = datos[3]
         cola = datos[4]
-
-        
-        
-
 
         comida = generar_comida(tablero)
 
@@ -255,22 +320,25 @@ def juego():
             muerte = True
         else:
             muerte = datos[2] 
-            if msvcrt.kbhit():           
-                movimiento = msvcrt.getch() 
-                movimiento = movimiento.decode()
 
-    winsound.PlaySound(r"C:\Sonidos\muerte.wav", winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+        if muerte == True:
+            winsound.PlaySound(os.path.join(SONIDOS_DIR, "muerte.wav"), winsound.SND_FILENAME) 
+            time.sleep(1)
+    
     return puntuacion
    
 def introduccion():
     opc = 0
     mejor_puntuacion = 0
-    winsound.PlaySound(None, winsound.SND_PURGE)
-    winsound.PlaySound(r"C:\Sonidos\intro.wav", winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+    
+    
 
     while opc != 3:
-        
-        winsound.PlaySound(r"C:\Sonidos\intro.wav", winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+        winsound.PlaySound(
+            os.path.join(SONIDOS_DIR, "intro.wav"),
+            winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP
+        )
+       
 
         os.system("cls" if os.name == "nt" else "clear")
         print("""Bienvenido a Snake, elige una opcion:
@@ -290,4 +358,4 @@ def introduccion():
                 print("Esta es tu mejor puntuacion: ", mejor_puntuacion)
                 time.sleep(2)
 
-introduccion()
+introduccion() 
